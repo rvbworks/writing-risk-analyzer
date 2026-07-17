@@ -1,4 +1,4 @@
-const CACHE = "writing-risk-analyzer-v5-plain-language";
+const CACHE = "writing-risk-analyzer-v6-lazy-docx";
 const ASSETS = ["./", "./model-v1.json", "./passage-model-v1.json", "./manifest.webmanifest", "./favicon.svg"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));

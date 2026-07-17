@@ -1,6 +1,5 @@
 import type { ChangeEvent, CSSProperties, DragEvent } from "react";
 import { useMemo, useRef, useState } from "react";
-import mammoth from "mammoth/mammoth.browser";
 import { Analysis, Signal, analyzeDocument, classificationTone, modelInputText, scoreTone, words } from "./analyzer";
 import { loadBrowserModel, loadPassageModel, modelProbability, scorePassages } from "./browser-model";
 import ScoringGuide from "./ScoringGuide";
@@ -78,6 +77,9 @@ export default function Home() {
     setBusy(true);
     setError("");
     try {
+      const mammoth = await import("mammoth/mammoth.browser")
+        .then((module) => module.default)
+        .catch(() => { throw new Error("The Word reader could not load. Connect to the internet once, refresh the page, and try again."); });
       const buffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer: buffer });
       const analysisText = modelInputText(result.value);

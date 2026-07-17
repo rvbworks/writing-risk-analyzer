@@ -61,7 +61,7 @@ Expected project URL: `https://rvbworks.github.io/writing-risk-analyzer/`
 
 ## Install on Windows
 
-After the Pages site is live, open it in Edge or Chrome and choose **Install Writing Risk Analyzer** from the browser's Apps menu. The service worker caches the application for offline use after the first successful visit.
+After the Pages site is live, open it in Edge or Chrome and choose **Install Writing Risk Analyzer** from the browser's Apps menu. The core app is cached after the first visit. Complete one successful check while online so the on-demand Word reader is also available for later offline scans.
 
 ## License and attribution
 
