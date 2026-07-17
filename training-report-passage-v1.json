@@ -1,0 +1,206 @@
+{
+  "version": "academic-passage-char-v1",
+  "protocol": {
+    "split_before_windowing": true,
+    "window_words": 180,
+    "stride_words": 90,
+    "minimum_words": 80,
+    "maximum_training_windows_per_document": 6,
+    "target_validation_document_fpr": 0.01,
+    "max_features": 12000,
+    "character_ngrams": [
+      3,
+      5
+    ],
+    "candidate_C": [
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "selected_C": 2.0,
+    "thresholds_frozen_before_holdout": {
+      "human": 0.6762234410484529,
+      "ai": 0.9430318926718717
+    },
+    "aide_policy": "Excluded after audit: the public CSV has only three AI rows and substantial near-duplication with ASAP 2.0.",
+    "personal_writing_policy": "All local personal documents are evaluation-only and do not fit features, weights, or thresholds."
+  },
+  "counts": {
+    "train_documents": {
+      "human": 18216,
+      "ai": 7451
+    },
+    "train_passage_windows": {
+      "human": 54588,
+      "ai": 15053
+    },
+    "validation_documents": {
+      "human": 3223,
+      "ai": 1346
+    },
+    "validation_passage_windows": {
+      "human": 9924,
+      "ai": 2693
+    },
+    "documents_too_short": {
+      "train": 43,
+      "validation": 4
+    }
+  },
+  "validation_candidates": [
+    {
+      "documents": 4565,
+      "human_documents": 3223,
+      "ai_documents": 1342,
+      "threshold": 0.9001799135473656,
+      "precision": 0.9583875162548765,
+      "ai_recall": 0.5491803278688525,
+      "f1": 0.6982472761724301,
+      "human_false_positive_rate": 0.009928637914986037,
+      "roc_auc": 0.9588922392287549,
+      "C": 0.5,
+      "passage_windows": 12617
+    },
+    {
+      "documents": 4565,
+      "human_documents": 3223,
+      "ai_documents": 1342,
+      "threshold": 0.9224989464758316,
+      "precision": 0.9588688946015425,
+      "ai_recall": 0.555886736214605,
+      "f1": 0.7037735849056603,
+      "human_false_positive_rate": 0.009928637914986037,
+      "roc_auc": 0.962608542457273,
+      "C": 1.0,
+      "passage_windows": 12617
+    },
+    {
+      "documents": 4565,
+      "human_documents": 3223,
+      "ai_documents": 1342,
+      "threshold": 0.9430318926718717,
+      "precision": 0.959493670886076,
+      "ai_recall": 0.5648286140089419,
+      "f1": 0.7110694183864915,
+      "human_false_positive_rate": 0.009928637914986037,
+      "roc_auc": 0.9648722182635705,
+      "C": 2.0,
+      "passage_windows": 12617
+    },
+    {
+      "documents": 4565,
+      "human_documents": 3223,
+      "ai_documents": 1342,
+      "threshold": 0.9607766927226881,
+      "precision": 0.9592356687898089,
+      "ai_recall": 0.5611028315946349,
+      "f1": 0.7080394922425952,
+      "human_false_positive_rate": 0.009928637914986037,
+      "roc_auc": 0.9660665956729598,
+      "C": 4.0,
+      "passage_windows": 12617
+    }
+  ],
+  "sealed_holdout": {
+    "raid_unseen_sources_and_generators": {
+      "documents": 4756,
+      "human_documents": 2379,
+      "ai_documents": 2377,
+      "threshold": 0.9430318926718717,
+      "precision": 0.9764851485148515,
+      "ai_recall": 0.6638620109381573,
+      "f1": 0.7903831705484599,
+      "human_false_positive_rate": 0.015973097940311057,
+      "roc_auc": 0.9577160128688782,
+      "passage_windows": 9921,
+      "documents_too_short": 4
+    },
+    "asap_unseen_prompts_human_only": {
+      "documents": 4665,
+      "human_documents": 4665,
+      "ai_documents": 0,
+      "threshold": 0.9430318926718717,
+      "precision": 0.0,
+      "ai_recall": 0.0,
+      "f1": 0.0,
+      "human_false_positive_rate": 0.020578778135048232,
+      "roc_auc": null,
+      "passage_windows": 14498,
+      "documents_too_short": 0,
+      "maximum_score_percentiles": [
+        0.007615084836153471,
+        0.5188993386518644,
+        0.86066452773351,
+        0.909767285291796,
+        0.9609521537104591,
+        0.9949984745686221
+      ]
+    },
+    "personal_eleven_documents_human_only": {
+      "documents": 11,
+      "human_documents": 11,
+      "ai_documents": 0,
+      "threshold": 0.9430318926718717,
+      "precision": 0.0,
+      "ai_recall": 0.0,
+      "f1": 0.0,
+      "human_false_positive_rate": 0.09090909090909091,
+      "roc_auc": null,
+      "passage_windows": 37,
+      "documents_too_short": 0,
+      "maximum_window_scores": [
+        {
+          "id": "personal:rvb-human-26b4d8a41284",
+          "score": 0.9204411636648026
+        },
+        {
+          "id": "personal:rvb-human-544bb6f68093",
+          "score": 0.6898793082135519
+        },
+        {
+          "id": "personal:rvb-human-74b418070942",
+          "score": 0.4257550255877478
+        },
+        {
+          "id": "personal:rvb-human-8543d5f02329",
+          "score": 0.8259808063787982
+        },
+        {
+          "id": "personal:rvb-human-8d8806722321",
+          "score": 0.30935264311680466
+        },
+        {
+          "id": "personal:rvb-human-9750c686ca39",
+          "score": 0.74547228582215
+        },
+        {
+          "id": "personal:rvb-human-9c0e85f96b99",
+          "score": 0.35945855159001716
+        },
+        {
+          "id": "personal:rvb-human-d33646043bca",
+          "score": 0.6776753757965291
+        },
+        {
+          "id": "personal:rvb-human-d4e4013d97a7",
+          "score": 0.8646549129338382
+        },
+        {
+          "id": "personal:rvb-human-d9b577f8fbcb",
+          "score": 0.7206357582593301
+        },
+        {
+          "id": "personal:rvb-human-ff1131d575f9",
+          "score": 0.9486308995971736
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "RAID supplies the source-matched human/AI training pairs but is not an academic-only corpus.",
+    "ASAP 2.0 supplies academic human writing; the holdout does not measure academic AI recall.",
+    "A flagged window means the passage crossed a learned threshold, not that every word in it was AI-written.",
+    "Mixed human/AI passages were not available for this version's training labels."
+  ]
+}

@@ -1,5 +1,5 @@
-const CACHE = "writing-risk-analyzer-v2-ui";
-const ASSETS = ["./", "./model-v1.json", "./manifest.webmanifest", "./favicon.svg"];
+const CACHE = "writing-risk-analyzer-v3-passage";
+const ASSETS = ["./", "./model-v1.json", "./passage-model-v1.json", "./manifest.webmanifest", "./favicon.svg"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));
 self.addEventListener("fetch", event => {

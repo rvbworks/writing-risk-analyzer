@@ -5,5 +5,7 @@ dist/
 .npm-cache/
 .home/
 *.tsbuildinfo
+__pycache__/
+*.pyc
 vite.config.js
 vite.config.d.ts

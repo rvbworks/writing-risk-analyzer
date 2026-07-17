@@ -1,0 +1,58 @@
+{
+  "dataset": "AIDE public Kaggle download",
+  "license": "CC BY 4.0",
+  "rows": 1378,
+  "columns": [
+    "generated",
+    "id",
+    "prompt_id",
+    "text"
+  ],
+  "labels": {
+    "human": 1375,
+    "ai": 3
+  },
+  "prompt_label_counts": [
+    {
+      "prompt_id": "0",
+      "label": "human",
+      "rows": 707
+    },
+    {
+      "prompt_id": "0",
+      "label": "ai",
+      "rows": 1
+    },
+    {
+      "prompt_id": "1",
+      "label": "human",
+      "rows": 668
+    },
+    {
+      "prompt_id": "1",
+      "label": "ai",
+      "rows": 2
+    }
+  ],
+  "overlap_with_asap_2": {
+    "exact_normalized_text": 4,
+    "nearest_similarity_at_least_0_90": 1317,
+    "nearest_similarity_at_least_0_95": 1067,
+    "nearest_similarity_percentiles": {
+      "0": 0.10895366258063444,
+      "25": 0.9520211548468216,
+      "50": 0.9690459182315752,
+      "75": 0.9826722424818078,
+      "90": 0.9909657590547828,
+      "95": 0.9946872414106191,
+      "99": 1.0,
+      "100": 1.0
+    }
+  },
+  "decision": "excluded_from_training_and_independent_evaluation",
+  "reasons": [
+    "The downloaded CSV contains only three AI-labeled essays, which is inadequate for AI-model training or recall estimation.",
+    "Most human essays are near-duplicates of ASAP 2.0 material already used by the project, so treating them as independent evidence would leak sources.",
+    "The accompanying instructions describe generating and filtering a larger synthetic set, but those generated essays are not present in the public CSV."
+  ]
+}

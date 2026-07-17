@@ -1,5 +1,7 @@
+import type { PassageScan } from "./browser-model";
+
 export type Signal = {
-  key: "model" | "predictability" | "patterns" | "guard";
+  key: "model" | "passage" | "patterns" | "guard";
   label: string;
   score: number;
   detail: string;
@@ -24,6 +26,8 @@ export type Analysis = {
   modelProbability?: number;
   modelVersion?: string;
   thresholds?: { human: number; ai: number };
+  styleScore: number;
+  passageScan?: PassageScan;
 };
 
 const AI_TRANSITIONS = [
@@ -179,6 +183,7 @@ export function analyzeDocument(
   learnedProbability?: number,
   modelVersion?: string,
   thresholds: { human: number; ai: number } = { human: 0.25, ai: 0.95 },
+  passageScan?: PassageScan,
 ): Analysis {
   const { kept, excluded, normalized } = proseBlocks(raw);
   const sourceParagraphs = kept.length ? kept : [normalized];
@@ -201,7 +206,6 @@ export function analyzeDocument(
   const heuristicSignal = Math.round(clamp(weightedRisk * 0.7 + predictability * 0.15 + patterns * 0.15));
   const learnedSignal = learnedProbability === undefined ? undefined : Math.round(clamp(learnedProbability * 100));
   const modelSignal = learnedSignal ?? heuristicSignal;
-  const corroboration = Math.min(100, heuristicSignal * 1.35);
   // With a learned model available, display its probability-like score.
   // Heuristics remain explanatory and do not silently alter that percentage.
   const guardedScore = learnedSignal === undefined ? Math.round(clamp(modelSignal * (0.58 + guardStrength / 400))) : modelSignal;
@@ -217,6 +221,8 @@ export function analyzeDocument(
     : "Uncertain — evidence is not decisive";
 
   const recommendations: string[] = [];
+  if (passageScan?.flaggedWindowCount) recommendations.push("Review the highlighted passages for accuracy, specificity, and appropriate citation. If the wording is yours, do not rewrite solely to lower a detector score; preserve drafts or revision history instead.");
+  else if (passageScan?.reviewWindowCount) recommendations.push("The passage model found review-range windows but no passage crossed its AI-pattern threshold. Revise only where clarity, accuracy, or assignment requirements call for it.");
   if (templateCount >= 2) recommendations.push("Review stock transitions or template phrases where they do not add meaning.");
   if (paragraphs.some((p) => p.reasons.some((r) => r.includes("low variation")))) recommendations.push("Review sentence rhythm only in the specifically highlighted passages; uniformity alone is not evidence of AI authorship.");
   if (paragraphs.some((p) => p.reasons.some((r) => r.includes("Repeated")))) recommendations.push("Remove repeated wording when it makes the argument less precise.");
@@ -232,8 +238,8 @@ export function analyzeDocument(
     excludedWordCount: excluded.reduce((sum, block) => sum + words(block).length, 0),
     signals: [
       { key: "model", label: learnedSignal === undefined ? "Pattern fallback" : "Learned model", score: modelSignal, detail: learnedSignal === undefined ? "Model unavailable; style signals only" : "Character-pattern classifier" },
-      { key: "predictability", label: "Predictability", score: predictability, detail: "Rhythm, repetition, and variation" },
-      { key: "patterns", label: "Writing patterns", score: patterns, detail: "Structure and template language" },
+      { key: "passage", label: "Flagged coverage", score: passageScan?.coveragePercent ?? 0, detail: passageScan?.sufficientText === false ? "Not enough text for passage analysis" : "Body words inside matched windows" },
+      { key: "patterns", label: "Style context", score: heuristicSignal, detail: "Rhythm, repetition, and template language" },
       { key: "guard", label: "False-positive guard", score: guardStrength, detail: "Evidence quality and text length" },
     ],
     paragraphs,
@@ -241,10 +247,18 @@ export function analyzeDocument(
     modelProbability: learnedProbability,
     modelVersion,
     thresholds,
+    styleScore: heuristicSignal,
+    passageScan,
   };
 }
 
 export function scoreTone(score: number, guard = false) {
   if (guard) return score >= 70 ? "safe" : score >= 45 ? "watch" : "risk";
   return score >= 62 ? "risk" : score >= 36 ? "watch" : "safe";
+}
+
+export function classificationTone(score: number, thresholds: { human: number; ai: number }) {
+  if (score >= thresholds.ai * 100) return "risk";
+  if (score <= thresholds.human * 100) return "safe";
+  return "watch";
 }
