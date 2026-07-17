@@ -1,6 +1,7 @@
 # Writing Risk Analyzer
 
-A privacy-first academic writing-pattern screening tool by Robert W. VanBuren (`rvbworks`). Drop in a Microsoft Word `.docx` file and receive a conservative document-level risk signal, paragraph explanations, and revision recommendations.
+A privacy-first academic writing-pattern screening tool rvbworks
+Drop in a Microsoft Word `.docx` file and receive a conservative document-level risk signal, paragraph explanations, and revision recommendations.
 
 ## Privacy
 
@@ -41,4 +42,4 @@ After the Pages site is live, open it in Edge or Chrome and choose **Install Wri
 
 ## License and attribution
 
-Copyright © 2026 Robert W. VanBuren. Released under the MIT License. The model was informed by the HC3 and MAGE research datasets; see their respective repositories and papers for dataset terms and research context.
+Copyright © 2026 rvbworks. Released under the MIT License. The model was informed by the HC3 and MAGE research datasets; see their respective repositories and papers for dataset terms and research context.
