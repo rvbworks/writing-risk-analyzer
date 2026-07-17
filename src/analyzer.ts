@@ -161,13 +161,13 @@ export function analyzeParagraph(text: string): ParagraphResult {
   if (s.length < 4 && activeSignals < 2) score *= 0.7;
 
   const reasons: string[] = [];
-  if (uniformSignal) reasons.push("Sentence lengths show unusually low variation.");
-  if (transitionSignal) reasons.push(`${transitionHits} formulaic transition${transitionHits === 1 ? "" : "s"} detected.`);
-  if (templateSignal) reasons.push(`${templateHits} common template phrase${templateHits === 1 ? "" : "s"} detected.`);
-  if (startSignal) reasons.push("Several sentences begin with the same structure.");
-  if (lexicalSignal) reasons.push("Content-word variety is low for the passage length.");
-  if (repetitionSignal) reasons.push("Repeated phrasing lowers structural variety.");
-  if (!reasons.length) reasons.push("No corroborated mechanical-writing pattern was found.");
+  if (uniformSignal) reasons.push("Many sentences are close to the same length.");
+  if (transitionSignal) reasons.push(`${transitionHits} stock transition${transitionHits === 1 ? " was" : "s were"} found.`);
+  if (templateSignal) reasons.push(`${templateHits} common or formula-like phrase${templateHits === 1 ? " was" : "s were"} found.`);
+  if (startSignal) reasons.push("Several sentences begin in the same way.");
+  if (lexicalSignal) reasons.push("The paragraph repeats its main words more than expected for its length.");
+  if (repetitionSignal) reasons.push("The paragraph repeats short phrases more than expected.");
+  if (!reasons.length) reasons.push("No strong style flags were found.");
 
   const finalScore = Math.round(clamp(score));
   return {
@@ -215,20 +215,20 @@ export function analyzeDocument(
     allWords.length >= 220 && disagreement < 26 ? "Moderate" :
     patterns >= 55 && paragraphs.length >= 2 ? "Moderate" : "Low";
 
-  const verdict = learnedSignal === undefined ? "Pattern analysis only — model unavailable"
-    : learnedProbability! >= thresholds.ai ? "AI-pattern match — verify manually"
-    : learnedProbability! <= thresholds.human ? "Low AI-pattern signal — authorship remains unknown"
-    : "Uncertain — evidence is not decisive";
+  const verdict = learnedSignal === undefined ? "Basic style check only — scoring file unavailable"
+    : learnedProbability! >= thresholds.ai ? "Strong AI-like pattern — review the paper"
+    : learnedProbability! <= thresholds.human ? "Fewer AI-like writing patterns found"
+    : "No clear answer — review the details";
 
   const recommendations: string[] = [];
-  if (passageScan?.flaggedWindowCount) recommendations.push("Review the highlighted passages for accuracy, specificity, and appropriate citation. If the wording is yours, do not rewrite solely to lower a detector score; preserve drafts or revision history instead.");
-  else if (passageScan?.reviewWindowCount) recommendations.push("The passage model found review-range windows but no passage crossed its AI-pattern threshold. Revise only where clarity, accuracy, or assignment requirements call for it.");
-  if (templateCount >= 2) recommendations.push("Review stock transitions or template phrases where they do not add meaning.");
-  if (paragraphs.some((p) => p.reasons.some((r) => r.includes("low variation")))) recommendations.push("Review sentence rhythm only in the specifically highlighted passages; uniformity alone is not evidence of AI authorship.");
-  if (paragraphs.some((p) => p.reasons.some((r) => r.includes("Repeated")))) recommendations.push("Remove repeated wording when it makes the argument less precise.");
-  if (paragraphs.some((p) => p.score >= 36)) recommendations.push("Add concrete examples, course-specific details, or properly cited evidence where they strengthen the highlighted passage.");
-  if (!recommendations.length) recommendations.push("No pattern-based revision is warranted. Edit only for clarity, accuracy, and assignment requirements.");
-  recommendations.push("Treat this result as a screening signal, not proof of authorship; preserve drafts and revision history when authorship matters.");
+  if (passageScan?.flaggedWindowCount) recommendations.push("Read the flagged sections for accuracy, clear wording, and proper citations. If the words are yours, do not rewrite them just to lower the score. Keep drafts or version history instead.");
+  else if (passageScan?.reviewWindowCount) recommendations.push("Some sections fell in the middle range, but none were flagged. Change them only if doing so improves the writing or helps meet the assignment.");
+  if (templateCount >= 2) recommendations.push("Replace stock transitions or common phrases when they do not add useful meaning.");
+  if (paragraphs.some((p) => p.reasons.some((r) => r.includes("close to the same length")))) recommendations.push("Look at sentence length and rhythm in the listed paragraphs. Similar sentence lengths alone do not prove AI use.");
+  if (paragraphs.some((p) => p.reasons.some((r) => r.includes("repeats short phrases")))) recommendations.push("Remove repeated wording when it makes the point less clear.");
+  if (paragraphs.some((p) => p.score >= 36)) recommendations.push("Add clear examples, details from the course, or cited sources where they would strengthen the paper.");
+  if (!recommendations.length) recommendations.push("No changes are needed based on these pattern checks. Edit only for clarity, accuracy, and the assignment rules.");
+  recommendations.push("Use this result as a reason to review the paper, not as proof of who wrote it. Keep drafts and version history when authorship matters.");
 
   return {
     score: guardedScore,
@@ -237,10 +237,10 @@ export function analyzeDocument(
     wordCount: allWords.length,
     excludedWordCount: excluded.reduce((sum, block) => sum + words(block).length, 0),
     signals: [
-      { key: "model", label: learnedSignal === undefined ? "Pattern fallback" : "Learned model", score: modelSignal, detail: learnedSignal === undefined ? "Model unavailable; style signals only" : "Character-pattern classifier" },
-      { key: "passage", label: "Flagged coverage", score: passageScan?.coveragePercent ?? 0, detail: passageScan?.sufficientText === false ? "Not enough text for passage analysis" : "Body words inside matched windows" },
-      { key: "patterns", label: "Style context", score: heuristicSignal, detail: "Rhythm, repetition, and template language" },
-      { key: "guard", label: "False-positive guard", score: guardStrength, detail: "Evidence quality and text length" },
+      { key: "model", label: "Overall pattern score", score: modelSignal, detail: learnedSignal === undefined ? "The main scoring file did not load; showing style checks only" : "Checks writing patterns in the whole paper" },
+      { key: "passage", label: "Text in flagged sections", score: passageScan?.coveragePercent ?? 0, detail: passageScan?.sufficientText === false ? "The paper is too short to check smaller sections" : "Share of body text inside strongly matched sections" },
+      { key: "patterns", label: "Writing style notes", score: heuristicSignal, detail: "Checks repeated or formula-like writing" },
+      { key: "guard", label: "Result quality", score: guardStrength, detail: "Checks text length and whether the style clues agree" },
     ],
     paragraphs,
     recommendations: [...new Set(recommendations)],

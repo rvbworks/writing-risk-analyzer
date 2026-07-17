@@ -31,7 +31,7 @@ const featureIndexes = new WeakMap<BrowserModel, Map<string, number>>();
 
 export function loadBrowserModel() {
   cachedDocumentModel ??= fetch(`${import.meta.env.BASE_URL}model-v1.json`).then(async (response) => {
-    if (!response.ok) throw new Error("The local analysis model could not be loaded.");
+    if (!response.ok) throw new Error("The scoring file could not load. Refresh the page and try again.");
     return response.json() as Promise<BrowserModel>;
   });
   return cachedDocumentModel;
@@ -39,7 +39,7 @@ export function loadBrowserModel() {
 
 export function loadPassageModel() {
   cachedPassageModel ??= fetch(`${import.meta.env.BASE_URL}passage-model-v1.json`).then(async (response) => {
-    if (!response.ok) throw new Error("The local passage model could not be loaded.");
+    if (!response.ok) throw new Error("The section-scoring file could not load. Refresh the page and try again.");
     return response.json() as Promise<BrowserModel>;
   });
   return cachedPassageModel;

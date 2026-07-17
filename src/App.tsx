@@ -3,11 +3,31 @@ import { useMemo, useRef, useState } from "react";
 import mammoth from "mammoth/mammoth.browser";
 import { Analysis, Signal, analyzeDocument, classificationTone, modelInputText, scoreTone, words } from "./analyzer";
 import { loadBrowserModel, loadPassageModel, modelProbability, scorePassages } from "./browser-model";
+import ScoringGuide from "./ScoringGuide";
 
 function moduleTone(signal: Signal, analysis: Analysis) {
   if (signal.key === "model") return classificationTone((analysis.modelProbability ?? signal.score / 100) * 100, analysis.thresholds ?? { human: 0.25, ai: 0.95 });
   if (signal.key === "passage") return signal.score === 0 ? "safe" : signal.score < 25 ? "watch" : "risk";
   return scoreTone(signal.score, signal.key === "guard");
+}
+
+function signalResult(signal: Signal) {
+  if (signal.key === "model") return `${signal.score}/100`;
+  if (signal.key === "passage") return `${signal.score}% of text`;
+  if (signal.key === "patterns") return `${signal.score}/100 style flags`;
+  return signal.score >= 70 ? "Strong result quality" : signal.score >= 45 ? "Fair result quality" : "Limited result quality";
+}
+
+function passageLabel(level: string) {
+  if (level === "AI-pattern match") return "Strong match";
+  if (level === "Review range") return "Needs a closer look";
+  return "Fewer pattern matches";
+}
+
+function styleLabel(level: string) {
+  if (level === "Elevated") return "Many style flags";
+  if (level === "Moderate") return "Some style flags";
+  return "Few style flags";
 }
 
 export default function Home() {
@@ -61,7 +81,7 @@ export default function Home() {
       const buffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer: buffer });
       const analysisText = modelInputText(result.value);
-      if (words(analysisText).length < 80) throw new Error("After headings, front matter, and references are excluded, at least 80 body words are required for a validated scan.");
+      if (words(analysisText).length < 80) throw new Error("The paper needs at least 80 body words after the cover page, headings, and references are removed.");
       const [model, passageModel] = await Promise.all([loadBrowserModel(), loadPassageModel()]);
       const passageScan = scorePassages(analysisText, passageModel);
       setAnalysis(analyzeDocument(result.value, modelProbability(analysisText, model), model.version, model.thresholds, passageScan));
@@ -80,8 +100,11 @@ export default function Home() {
           <p className="eyebrow">Private writing review</p>
           <h1>Writing Risk Analyzer</h1>
         </div>
-        <div className="privacy-badge" title="Your document is processed on this device and is not uploaded.">
-          <span aria-hidden="true">✓</span> Runs locally in your browser
+        <div className="header-actions">
+          <a className="guide-link" href="#scoring-guide">Understand the scores</a>
+          <div className="privacy-badge" title="Your document is processed on this device and is not uploaded.">
+            <span aria-hidden="true">✓</span> Runs locally in your browser
+          </div>
         </div>
       </header>
 
@@ -114,43 +137,45 @@ export default function Home() {
 
         <aside className="preview-card">
           <div className="section-heading">
-            <div><p className="eyebrow">Evidence, not a verdict</p><h2>Analysis preview</h2></div>
-            <span className="info" title="The modules report separate measurements; their percentages are not averaged together.">i</span>
+            <div><p className="eyebrow">A clue, not proof</p><h2>What the results will show</h2></div>
+            <span className="info" title="Each result means something different. The numbers are not averaged together.">i</span>
           </div>
           <div className="module-grid">
             {(analysis?.signals ?? [
-              { key: "model", label: "Document model", score: 0, detail: "Whole-document classification" },
-              { key: "passage", label: "Flagged coverage", score: 0, detail: "Learned passage-level screening" },
-              { key: "patterns", label: "Style context", score: 0, detail: "Rhythm, repetition, and template language" },
-              { key: "guard", label: "False-positive guard", score: 0, detail: "Evidence quality and text length" },
+              { key: "model", label: "Overall pattern score", score: 0, detail: "Checks the writing patterns in the whole paper" },
+              { key: "passage", label: "Text in flagged sections", score: 0, detail: "Shows how much text is inside strongly matched sections" },
+              { key: "patterns", label: "Writing style notes", score: 0, detail: "Looks for repeated or formula-like writing" },
+              { key: "guard", label: "Result quality", score: 0, detail: "Checks whether there is enough text for a useful result" },
             ] as Signal[]).map((signal) => (
               <article className={`module ${analysis ? "active" : ""}`} key={signal.key}>
                 <div className={`module-icon ${signal.key}`} aria-hidden="true">{signal.key === "guard" ? "✓" : signal.key === "patterns" ? "≡" : signal.key === "passage" ? "◉" : "⌁"}</div>
                 <h3>{signal.label}</h3>
                 <p>{signal.detail}</p>
                 <div className="meter"><span className={analysis ? moduleTone(signal, analysis) : "idle"} style={{ width: `${analysis ? signal.score : 0}%` }} /></div>
-                <strong>{analysis ? `${signal.score}%` : "Waiting for document"}</strong>
+                <strong>{analysis ? signalResult(signal) : "Waiting for a paper"}</strong>
               </article>
             ))}
           </div>
         </aside>
       </section>
 
+      <ScoringGuide />
+
       {analysis && (
         <section id="results" className="results" aria-live="polite">
           <div className="result-summary">
             <div className={`score-ring ${classificationTone((analysis.modelProbability ?? analysis.score / 100) * 100, analysis.thresholds ?? { human: 0.25, ai: 0.95 })}`} style={{ "--score": `${analysis.score * 3.6}deg` } as CSSProperties}>
-              <div><strong>{analysis.score}<small>/100</small></strong><span>document model score</span></div>
+              <div><strong>{analysis.score}<small>/100</small></strong><span>overall pattern score</span></div>
             </div>
             <div className="summary-copy">
-              <p className="eyebrow">Overall screening result</p>
+              <p className="eyebrow">Overall result</p>
               <h2>{analysis.verdict}</h2>
-              <p>{analysis.wordCount.toLocaleString()} body words analyzed · {analysis.excludedWordCount.toLocaleString()} front-matter/reference words excluded · {analysis.modelVersion ?? "fallback model"}</p>
-              <div className="notice"><b>Important:</b> The center range is deliberately reported as uncertain. This result is screening evidence, never proof of authorship.</div>
+              <p>{analysis.wordCount.toLocaleString()} body words checked · {analysis.excludedWordCount.toLocaleString()} cover-page and reference words skipped</p>
+              <div className="notice"><b>Important:</b> A score in the middle does not give a clear answer. This tool looks for writing patterns; it cannot prove who wrote the paper.</div>
               <div className="score-breakdown" aria-label="Score explanation">
-                <div><span>Document classification</span><strong>{analysis.score}/100</strong><small>Compared with the document model’s validated thresholds</small></div>
-                <div><span>Flagged passage coverage</span><strong>{analysis.passageScan?.sufficientText === false ? "Insufficient text" : `${analysis.passageScan?.coveragePercent ?? 0}%`}</strong><small>{analysis.passageScan?.flaggedWindowCount ?? 0} of {analysis.passageScan?.windows.length ?? 0} learned windows crossed the passage boundary</small></div>
-                <div><span>Personal writing profile</span><strong>Not enabled</strong><small>This scan used no personal samples; optional profiling remains a future module</small></div>
+                <div><span>Overall pattern score</span><strong>{analysis.score}/100</strong><small>How closely the whole paper matches patterns learned from training examples</small></div>
+                <div><span>Text in flagged sections</span><strong>{analysis.passageScan?.sufficientText === false ? "Not enough text" : `${analysis.passageScan?.coveragePercent ?? 0}%`}</strong><small>{analysis.passageScan?.flaggedWindowCount ?? 0} of {analysis.passageScan?.windows.length ?? 0} sections reached the strict cutoff</small></div>
+                <div><span>Personal writing comparison</span><strong>Off</strong><small>This paper was not compared with any earlier writing samples</small></div>
               </div>
               <div
                 className="threshold-scale"
@@ -159,56 +184,60 @@ export default function Home() {
                   "--human": `${(analysis.thresholds?.human ?? 0.25) * 100}%`,
                   "--ai": `${(analysis.thresholds?.ai ?? 0.95) * 100}%`,
                 } as CSSProperties}
-                aria-label={`Document score ${analysis.score} out of 100. Low-signal boundary ${((analysis.thresholds?.human ?? 0.25) * 100).toFixed(1)}. AI-pattern boundary ${((analysis.thresholds?.ai ?? 0.95) * 100).toFixed(1)}.`}
+                aria-label={`Overall pattern score ${analysis.score} out of 100. Scores through ${Math.floor((analysis.thresholds?.human ?? 0.25) * 100)} show fewer matches. Scores at ${Math.ceil((analysis.thresholds?.ai ?? 0.95) * 100)} or higher show a strong match.`}
               >
                 <div className="scale-track"><span className="score-marker"><b>{analysis.score}</b></span></div>
-                <div className="scale-labels"><span>Low signal</span><span>Uncertain</span><span>AI-pattern match</span></div>
-                <p>The document model examines the complete body text. Passage coverage comes from a separate learned model, and neither value is an average of the style indicators.</p>
+                <div className="scale-labels"><span>Fewer matches</span><span>No clear answer</span><span>Strong match</span></div>
+                <p>The overall score checks the whole paper. The flagged-text number checks smaller sections. The style notes are separate. These results are not averaged together.</p>
+                <a className="inline-guide-link" href="#scoring-guide">See what each score means</a>
               </div>
             </div>
           </div>
 
           <div className="results-grid">
             <section className="panel">
-              <div className="section-heading"><div><p className="eyebrow">Passage review</p><h2>Learned passage analysis</h2></div><span>{analysis.passageScan?.flaggedWindowCount ?? 0}/{analysis.passageScan?.windows.length ?? 0}</span></div>
-              <p className="panel-explainer">Overlapping 180-word windows are scored by {analysis.passageScan?.modelVersion ?? "the local passage model"}. Coverage counts the unique body words inside windows that crossed its validated AI-pattern boundary.</p>
+              <div className="section-heading"><div><p className="eyebrow">Section review</p><h2>Sections to look at</h2></div><span>{analysis.passageScan?.flaggedWindowCount ?? 0}/{analysis.passageScan?.windows.length ?? 0} flagged</span></div>
+              <p className="panel-explainer">The app checks overlapping groups of about 180 words. A section is flagged only when it reaches the strict 94.30 cutoff. Words that appear in two overlapping sections are counted once.</p>
               {analysis.passageScan?.sufficientText === false ? (
-                <div className="passage-empty">At least 80 body words are needed for passage-level analysis. The document result above can still be reviewed, but no coverage percentage is inferred.</div>
+                <div className="passage-empty">The paper needs at least 80 body words before the app can check smaller sections.</div>
               ) : (
               <div className="paragraph-list passage-list">
                 {displayedPassages.map((passage) => (
                   <details key={`${passage.startWord}-${passage.endWord}`} open={passage.level === "AI-pattern match"}>
                     <summary>
                       <span>Words {passage.startWord + 1}–{passage.endWord}</span>
-                      <b className={passage.level === "AI-pattern match" ? "risk" : passage.level === "Review range" ? "watch" : "safe"}>{passage.level} · {passage.score}/100</b>
+                      <b className={passage.level === "AI-pattern match" ? "risk" : passage.level === "Review range" ? "watch" : "safe"}>{passageLabel(passage.level)} · {passage.score}/100</b>
                     </summary>
                     <blockquote>{passage.text}</blockquote>
                     <p className="passage-note">{passage.level === "AI-pattern match"
-                      ? `This window crossed the passage model boundary of ${((analysis.passageScan?.thresholds.ai ?? 0.95) * 100).toFixed(1)}/100.`
+                      ? `This section reached the strict cutoff of ${((analysis.passageScan?.thresholds.ai ?? 0.95) * 100).toFixed(1)}/100. Review it, but do not treat the result as proof of AI writing.`
                       : passage.level === "Review range"
-                        ? "This window falls between the passage model’s low-signal and AI-pattern boundaries; it does not count as flagged coverage."
-                        : "This is one of the highest-scoring low-signal windows shown for context; it does not count as flagged coverage."}</p>
+                        ? "This section is in the middle range. It is shown for context, but it does not count as flagged text."
+                        : "This is one of the paper's highest low-range sections. It is shown for context, but it does not count as flagged text."}</p>
                   </details>
                 ))}
-                {!displayedPassages.length && <div className="passage-empty">No passage windows were available for display.</div>}
+                {!displayedPassages.length && <div className="passage-empty">There were no sections to show.</div>}
               </div>
               )}
               <details className="style-details">
-                <summary><span>Separate style context</span><b>{analysis.styleScore}/100</b></summary>
-                <p className="panel-explainer">This heuristic describes rhythm, repetition, and template language. It is not AI probability and is not included in either learned-model score.</p>
+                <summary><span>Writing style notes</span><b>{analysis.styleScore}/100 style flags</b></summary>
+                <p className="panel-explainer">This separate check looks for repeated or formula-like writing. It is not an AI percentage, and it does not change the overall score or the flagged-text number.</p>
                 <div className="paragraph-list compact">
                   {analysis.paragraphs.map((paragraph, index) => (
-                    <div className="style-row" key={`${index}-${paragraph.text.slice(0, 20)}`}>
-                      <span>Paragraph {index + 1}</span><b className={scoreTone(paragraph.score)}>{paragraph.level} · {paragraph.score}/100</b>
-                    </div>
+                    <details className="style-row-details" key={`${index}-${paragraph.text.slice(0, 20)}`}>
+                      <summary>
+                        <span>Paragraph {index + 1}</span><b className={scoreTone(paragraph.score)}>{styleLabel(paragraph.level)} · {paragraph.score}/100</b>
+                      </summary>
+                      <ul>{paragraph.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+                    </details>
                   ))}
                 </div>
               </details>
             </section>
 
             <aside className="panel recommendations">
-              <p className="eyebrow">Human review checklist</p>
-              <h2>Recommended changes</h2>
+              <p className="eyebrow">Next steps</p>
+              <h2>What to review</h2>
               <ol>{analysis.recommendations.map((item) => <li key={item}>{item}</li>)}</ol>
               <button type="button" className="secondary-button" onClick={() => { setAnalysis(null); setFile(null); if (inputRef.current) inputRef.current.value = ""; window.scrollTo({ top: 0, behavior: "smooth" }); }}>Check another document</button>
             </aside>
@@ -217,8 +246,8 @@ export default function Home() {
       )}
 
       <footer>
-        <p><b>Method:</b> separate local document and passage models plus style context and conservative abstention.</p>
-        <p>No uploads · No accounts · No stored documents</p>
+        <p><b>How it works:</b> the app checks the whole paper, then looks at smaller sections and writing style.</p>
+        <p><a href="#scoring-guide">Understand the scores</a> · No uploads · No accounts · No stored documents</p>
       </footer>
     </main>
   );

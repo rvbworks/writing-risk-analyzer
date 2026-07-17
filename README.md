@@ -1,21 +1,24 @@
 # Writing Risk Analyzer
 
-A privacy-first academic writing-pattern screening tool by rvbworks.
-Drop in a Microsoft Word `.docx` file and receive a conservative document classification, learned passage coverage, separate style context, and review recommendations.
+A private academic writing-pattern checker by rvbworks.
+Drop in a Microsoft Word `.docx` file to get a whole-paper score, flagged sections, plain-language style notes, and clear next steps.
 
 ## Privacy
 
 Documents are extracted and analyzed entirely in the browser. The application has no backend, account system, analytics, document storage, or external AI API.
 
-## What the result means
+## What the results mean
 
-- **At or above the model's validated AI threshold:** AI-pattern match; verify manually.
-- **Between the validated thresholds:** Uncertain; the evidence is not decisive.
-- **At or below the low-signal threshold:** Low AI-pattern signal; authorship remains unknown.
+- **Overall pattern score:** Checks the whole paper. Scores from 0–54 show fewer matches, 55–87 give no clear answer, and 88–100 show a strong match that needs human review.
+- **Text in flagged sections:** Shows how much of the paper sits inside smaller sections that reached a strict cutoff.
+- **Writing style notes:** Point out repeated or formula-like writing but do not change the first two results.
+- **Result quality:** Shows whether there is enough text and whether the style clues generally agree.
 
-The score is screening evidence, not proof of authorship. It must not be used alone for an academic-misconduct decision.
+The results point to writing that may deserve a closer look. They do not prove who wrote a paper and must not be used alone for an academic-misconduct decision.
 
-The document score is a model score out of 100, not the percentage of the paper written by AI. **Flagged passage coverage** is the percentage of unique body words inside overlapping windows that crossed the separately validated passage-model threshold. An optional personal writing profile is planned but is not part of the current result.
+The overall score is a pattern score out of 100, not the percentage of the paper written by AI. Personal writing comparison is currently off.
+
+For plain-language definitions, cutoff rules, a worked example, and safe-use guidance, see **[Understanding your scores](SCORING.md)**.
 
 ## Validation snapshot
 
