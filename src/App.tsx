@@ -13,6 +13,10 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
 
   const fileLabel = useMemo(() => file ? `${file.name} · ${(file.size / 1024).toFixed(0)} KB` : "No file selected", [file]);
+  const paragraphStyleAverage = useMemo(() => {
+    if (!analysis?.paragraphs.length) return 0;
+    return Math.round(analysis.paragraphs.reduce((sum, paragraph) => sum + paragraph.score, 0) / analysis.paragraphs.length);
+  }, [analysis]);
 
   function acceptFile(candidate?: File) {
     if (!candidate) return;
@@ -125,19 +129,38 @@ export default function Home() {
         <section id="results" className="results" aria-live="polite">
           <div className="result-summary">
             <div className={`score-ring ${scoreTone(analysis.score)}`} style={{ "--score": `${analysis.score * 3.6}deg` } as CSSProperties}>
-              <div><strong>{analysis.score}%</strong><span>risk signal</span></div>
+              <div><strong>{analysis.score}<small>/100</small></strong><span>document model score</span></div>
             </div>
             <div className="summary-copy">
               <p className="eyebrow">Overall screening result</p>
               <h2>{analysis.verdict}</h2>
               <p>{analysis.wordCount.toLocaleString()} body words analyzed · {analysis.excludedWordCount.toLocaleString()} front-matter/reference words excluded · {analysis.modelVersion ?? "fallback model"}</p>
               <div className="notice"><b>Important:</b> The center range is deliberately reported as uncertain. This result is screening evidence, never proof of authorship.</div>
+              <div className="score-breakdown" aria-label="Score explanation">
+                <div><span>Document model</span><strong>{analysis.score}/100</strong><small>Primary classification score</small></div>
+                <div><span>Style heuristic</span><strong>{paragraphStyleAverage}/100</strong><small>Average of paragraph style signals</small></div>
+                <div><span>AI-pattern boundary</span><strong>{((analysis.thresholds?.ai ?? 0.95) * 100).toFixed(1)}/100</strong><small>Required for an AI-pattern match</small></div>
+              </div>
+              <div
+                className="threshold-scale"
+                style={{
+                  "--document": `${analysis.score}%`,
+                  "--human": `${(analysis.thresholds?.human ?? 0.25) * 100}%`,
+                  "--ai": `${(analysis.thresholds?.ai ?? 0.95) * 100}%`,
+                } as CSSProperties}
+                aria-label={`Document score ${analysis.score} out of 100. Low-signal boundary ${((analysis.thresholds?.human ?? 0.25) * 100).toFixed(1)}. AI-pattern boundary ${((analysis.thresholds?.ai ?? 0.95) * 100).toFixed(1)}.`}
+              >
+                <div className="scale-track"><span className="score-marker"><b>{analysis.score}</b></span></div>
+                <div className="scale-labels"><span>Low signal</span><span>Uncertain</span><span>AI-pattern match</span></div>
+                <p>The document model examines character-pattern combinations across the complete document. Paragraph scores are separate style explanations and are not averaged into the document score.</p>
+              </div>
             </div>
           </div>
 
           <div className="results-grid">
             <section className="panel">
-              <div className="section-heading"><div><p className="eyebrow">Passage review</p><h2>Paragraph signals</h2></div><span>{analysis.paragraphs.length}</span></div>
+              <div className="section-heading"><div><p className="eyebrow">Passage review</p><h2>Style-only paragraph signals</h2></div><span>{analysis.paragraphs.length}</span></div>
+              <p className="panel-explainer">These scores describe rhythm, repetition, and template language. They explain writing style but do not calculate the document model score.</p>
               <div className="paragraph-list">
                 {analysis.paragraphs.map((paragraph, index) => (
                   <details key={`${index}-${paragraph.text.slice(0, 20)}`} open={paragraph.level === "Elevated"}>

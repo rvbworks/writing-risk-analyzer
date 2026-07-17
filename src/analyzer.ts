@@ -23,6 +23,7 @@ export type Analysis = {
   recommendations: string[];
   modelProbability?: number;
   modelVersion?: string;
+  thresholds?: { human: number; ai: number };
 };
 
 const AI_TRANSITIONS = [
@@ -239,6 +240,7 @@ export function analyzeDocument(
     recommendations: [...new Set(recommendations)],
     modelProbability: learnedProbability,
     modelVersion,
+    thresholds,
   };
 }
 
