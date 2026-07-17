@@ -44,4 +44,4 @@ After the Pages site is live, open it in Edge or Chrome and choose **Install Wri
 
 ## License and attribution
 
-Copyright © 2026 rvbworks. Released under the MIT License. The model was trained with the CC BY 4.0 ASAP 2.0 corpus and the MIT-licensed RAID benchmark. See `training-report-v2.json` for the frozen evaluation protocol and results.
+Copyright © 2026 rvbworks. Released under the MIT License. The model was trained with the CC BY 4.0 ASAP 2.0 corpus and the MIT-licensed RAID benchmark. See `training-report-v2.json` for the frozen evaluation protocol and results.8b64d4efaae349572f5c22c4b278f9918d901851
