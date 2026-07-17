@@ -112,6 +112,11 @@ function proseBlocks(raw: string) {
   return { kept, excluded, normalized };
 }
 
+export function modelInputText(raw: string) {
+  const { kept, normalized } = proseBlocks(raw);
+  return (kept.length ? kept : [normalized]).join("\n\n");
+}
+
 export function analyzeParagraph(text: string): ParagraphResult {
   const s = sentences(text);
   const w = words(text);
@@ -168,7 +173,12 @@ export function analyzeParagraph(text: string): ParagraphResult {
   };
 }
 
-export function analyzeDocument(raw: string, learnedProbability?: number, modelVersion?: string): Analysis {
+export function analyzeDocument(
+  raw: string,
+  learnedProbability?: number,
+  modelVersion?: string,
+  thresholds: { human: number; ai: number } = { human: 0.25, ai: 0.95 },
+): Analysis {
   const { kept, excluded, normalized } = proseBlocks(raw);
   const sourceParagraphs = kept.length ? kept : [normalized];
   const paragraphs = sourceParagraphs.map(analyzeParagraph);
@@ -191,7 +201,9 @@ export function analyzeDocument(raw: string, learnedProbability?: number, modelV
   const learnedSignal = learnedProbability === undefined ? undefined : Math.round(clamp(learnedProbability * 100));
   const modelSignal = learnedSignal ?? heuristicSignal;
   const corroboration = Math.min(100, heuristicSignal * 1.35);
-  const guardedScore = learnedSignal === undefined ? Math.round(clamp(modelSignal * (0.58 + guardStrength / 400))) : Math.round(clamp(modelSignal * 0.84 + corroboration * 0.16));
+  // With a learned model available, display its probability-like score.
+  // Heuristics remain explanatory and do not silently alter that percentage.
+  const guardedScore = learnedSignal === undefined ? Math.round(clamp(modelSignal * (0.58 + guardStrength / 400))) : modelSignal;
 
   const confidence: Analysis["confidence"] =
     allWords.length >= 500 && disagreement < 16 ? "High" :
@@ -199,8 +211,8 @@ export function analyzeDocument(raw: string, learnedProbability?: number, modelV
     patterns >= 55 && paragraphs.length >= 2 ? "Moderate" : "Low";
 
   const verdict = learnedSignal === undefined ? "Pattern analysis only — model unavailable"
-    : learnedProbability! >= 0.95 ? "Strong AI-pattern match — verify manually"
-    : learnedProbability! <= 0.25 ? "Low AI-pattern signal — authorship remains unknown"
+    : learnedProbability! >= thresholds.ai ? "AI-pattern match — verify manually"
+    : learnedProbability! <= thresholds.human ? "Low AI-pattern signal — authorship remains unknown"
     : "Uncertain — evidence is not decisive";
 
   const recommendations: string[] = [];

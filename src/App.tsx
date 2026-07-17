@@ -1,7 +1,7 @@
 import type { ChangeEvent, CSSProperties, DragEvent } from "react";
 import { useMemo, useRef, useState } from "react";
 import mammoth from "mammoth/mammoth.browser";
-import { Analysis, Signal, analyzeDocument, scoreTone, words } from "./analyzer";
+import { Analysis, Signal, analyzeDocument, modelInputText, scoreTone, words } from "./analyzer";
 import { loadBrowserModel, modelProbability } from "./browser-model";
 
 export default function Home() {
@@ -48,7 +48,8 @@ export default function Home() {
       const result = await mammoth.extractRawText({ arrayBuffer: buffer });
       if (words(result.value).length < 40) throw new Error("The document needs at least 40 words for a useful scan.");
       const model = await loadBrowserModel();
-      setAnalysis(analyzeDocument(result.value, modelProbability(result.value, model), model.version));
+      const analysisText = modelInputText(result.value);
+      setAnalysis(analyzeDocument(result.value, modelProbability(analysisText, model), model.version, model.thresholds));
       setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The document could not be read.");

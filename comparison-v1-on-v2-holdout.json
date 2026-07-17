@@ -1,0 +1,20 @@
+{
+  "version": "academic-char-v1",
+  "threshold": 0.95,
+  "raid_unseen_models": {
+    "human_false_positive_rate": 0.008823529411764706,
+    "ai_recall": 0.1861344537815126
+  },
+  "asap_unseen_prompts": {
+    "human_false_positive_rate": 0.09281886387995712
+  },
+  "personal_four_documents": {
+    "human_false_positive_rate": 0.25,
+    "probabilities": [
+      0.9737779452219962,
+      0.5950263340853191,
+      0.27307234909233585,
+      0.007634097882982309
+    ]
+  }
+}

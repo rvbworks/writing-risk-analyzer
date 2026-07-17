@@ -1,6 +1,7 @@
 # Writing Risk Analyzer
 
-A privacy-first academic writing-pattern screening tool by Robert W. VanBuren (`rvbworks`). Drop in a Microsoft Word `.docx` file and receive a conservative document-level risk signal, paragraph explanations, and revision recommendations.
+A privacy-first academic writing-pattern screening tool rvbworks
+Drop in a Microsoft Word `.docx` file and receive a conservative document-level risk signal, paragraph explanations, and revision recommendations.
 
 ## Privacy
 
@@ -8,15 +9,17 @@ Documents are extracted and analyzed entirely in the browser. The application ha
 
 ## What the result means
 
-- **95–100%:** Strong AI-pattern match; verify manually.
-- **26–94%:** Uncertain; the evidence is not decisive.
-- **0–25%:** Low AI-pattern signal; authorship remains unknown.
+- **At or above the model's validated AI threshold:** AI-pattern match; verify manually.
+- **Between the validated thresholds:** Uncertain; the evidence is not decisive.
+- **At or below the low-signal threshold:** Low AI-pattern signal; authorship remains unknown.
 
 The score is screening evidence, not proof of authorship. It must not be used alone for an academic-misconduct decision.
 
 ## Validation snapshot
 
-The compact character-pattern model was trained using corrected labels from HC3 and MAGE. Three complete domains—HC3 `wiki_csai`, MAGE `sci_gen`, and MAGE `yelp`—were excluded from training. At the deliberately strict 95% AI threshold, the 11,672-document held-out evaluation produced 93.31% precision, 0.98% human false positives, and 14.59% AI recall. The low recall is the cost of conservative high-confidence flags.
+The `academic-char-v2` model was trained on prompt-separated ASAP 2.0 human student essays, seven local human calibration documents, and source-matched human/AI pairs from RAID. Thresholds were frozen on an internal validation split before the sealed data was opened.
+
+On 2,380 RAID holdout pairs from unseen sources and generators (GPT-4 and Mistral-Chat), the AI threshold produced 96.55% precision, 75.25% AI recall, and a 2.69% human false-positive rate. On 4,665 human essays from two entirely unseen ASAP prompts, the false-positive rate was 2.57%. None of the four reserved local human documents crossed the AI threshold. These results describe the specified holdouts, not universal accuracy.
 
 ## Run locally
 
@@ -41,4 +44,4 @@ After the Pages site is live, open it in Edge or Chrome and choose **Install Wri
 
 ## License and attribution
 
-Copyright © 2026 Robert W. VanBuren. Released under the MIT License. The model was informed by the HC3 and MAGE research datasets; see their respective repositories and papers for dataset terms and research context.
+Copyright © 2026 rvbworks. Released under the MIT License. The model was trained with the CC BY 4.0 ASAP 2.0 corpus and the MIT-licensed RAID benchmark. See `training-report-v2.json` for the frozen evaluation protocol and results.

@@ -1,0 +1,154 @@
+{
+  "version": "academic-char-v2-candidate",
+  "protocol": {
+    "target_validation_human_fpr": 0.01,
+    "max_features": 12000,
+    "character_ngrams": [
+      3,
+      5
+    ],
+    "candidate_C": [
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "selected_C": 4.0,
+    "thresholds_frozen_before_holdout": {
+      "human": 0.5443123716523767,
+      "ai": 0.8714085674365345
+    }
+  },
+  "counts": {
+    "train": {
+      "human": 18231,
+      "ai": 7459
+    },
+    "validation": {
+      "human": 3215,
+      "ai": 1338
+    }
+  },
+  "validation_candidates": [
+    {
+      "documents": 4553,
+      "human_documents": 3215,
+      "ai_documents": 1338,
+      "threshold": 0.8081998542809959,
+      "precision": 0.9618138424821002,
+      "ai_recall": 0.6023916292974589,
+      "f1": 0.7408088235294118,
+      "human_false_positive_rate": 0.009953343701399688,
+      "roc_auc": 0.9638101016581931,
+      "C": 0.5
+    },
+    {
+      "documents": 4553,
+      "human_documents": 3215,
+      "ai_documents": 1338,
+      "threshold": 0.8280687549976038,
+      "precision": 0.9635949943117179,
+      "ai_recall": 0.633034379671151,
+      "f1": 0.7640956247180875,
+      "human_false_positive_rate": 0.009953343701399688,
+      "roc_auc": 0.9682658130447013,
+      "C": 1.0
+    },
+    {
+      "documents": 4553,
+      "human_documents": 3215,
+      "ai_documents": 1338,
+      "threshold": 0.8448903188805182,
+      "precision": 0.9652173913043478,
+      "ai_recall": 0.6636771300448431,
+      "f1": 0.7865367581930912,
+      "human_false_positive_rate": 0.009953343701399688,
+      "roc_auc": 0.9712588366843574,
+      "C": 2.0
+    },
+    {
+      "documents": 4553,
+      "human_documents": 3215,
+      "ai_documents": 1338,
+      "threshold": 0.8714085674365345,
+      "precision": 0.9654800431499461,
+      "ai_recall": 0.6689088191330343,
+      "f1": 0.7902869757174393,
+      "human_false_positive_rate": 0.009953343701399688,
+      "roc_auc": 0.973030241743323,
+      "C": 4.0
+    }
+  ],
+  "sealed_holdout": {
+    "overall": {
+      "documents": 9429,
+      "human_documents": 7049,
+      "ai_documents": 2380,
+      "threshold": 0.8714085674365345,
+      "precision": 0.9068354430379747,
+      "ai_recall": 0.7525210084033613,
+      "f1": 0.8225028702640643,
+      "human_false_positive_rate": 0.026102993332387574,
+      "roc_auc": 0.9610620613687382
+    },
+    "raid_unseen_models": {
+      "documents": 4760,
+      "human_documents": 2380,
+      "ai_documents": 2380,
+      "threshold": 0.8714085674365345,
+      "precision": 0.9654986522911051,
+      "ai_recall": 0.7525210084033613,
+      "f1": 0.8458087367178276,
+      "human_false_positive_rate": 0.02689075630252101,
+      "roc_auc": 0.9659312548548831
+    },
+    "asap_unseen_prompts": {
+      "documents": 4665,
+      "human_documents": 4665,
+      "ai_documents": 0,
+      "threshold": 0.8714085674365345,
+      "precision": 0.0,
+      "ai_recall": 0.0,
+      "f1": 0.0,
+      "human_false_positive_rate": 0.02572347266881029,
+      "roc_auc": null,
+      "probability_percentiles": [
+        0.0023543656044878896,
+        0.3419334799717987,
+        0.7402319301687167,
+        0.81904091287108,
+        0.927221009912086,
+        0.9886831980594522
+      ]
+    },
+    "personal_four_documents": {
+      "documents": 4,
+      "human_documents": 4,
+      "ai_documents": 0,
+      "threshold": 0.8714085674365345,
+      "precision": 0.0,
+      "ai_recall": 0.0,
+      "f1": 0.0,
+      "human_false_positive_rate": 0.0,
+      "roc_auc": null,
+      "probabilities": [
+        {
+          "id": "personal:rvb-human-26b4d8a41284",
+          "ai_probability": 0.5514768910392945
+        },
+        {
+          "id": "personal:rvb-human-74b418070942",
+          "ai_probability": 0.2788502758217947
+        },
+        {
+          "id": "personal:rvb-human-d9b577f8fbcb",
+          "ai_probability": 0.13172512580789905
+        },
+        {
+          "id": "personal:rvb-human-8543d5f02329",
+          "ai_probability": 0.8412789129855835
+        }
+      ]
+    }
+  }
+}
